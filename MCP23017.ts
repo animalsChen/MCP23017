@@ -153,4 +153,36 @@ namespace MCP23017 {
             return val;
         }
     }
+
+
+    let distanceBak = 0;
+    /**
+     * Get the distance of ultrasonic detection to the obstacle 
+     */
+    //% weight=90 blockId=startbit_ultrasonic  block="Ultrasonic|port %port|distance(cm)"
+
+    export function startbit_ultrasonic(): number {
+        let echoPin: DigitalPin;
+        let trigPin: DigitalPin;
+        echoPin = DigitalPin.P2;
+        trigPin = DigitalPin.P1;
+        
+        pins.setPull(echoPin, PinPullMode.PullNone);
+        pins.setPull(trigPin, PinPullMode.PullNone);
+
+        pins.digitalWritePin(trigPin, 0);
+        control.waitMicros(2);
+        pins.digitalWritePin(trigPin, 1);
+        control.waitMicros(10);
+        pins.digitalWritePin(trigPin, 0);
+        control.waitMicros(5);
+        let d = pins.pulseIn(echoPin, PulseValue.High, 25000);
+        let distance = d;
+        // filter timeout spikes
+        if (distance == 0 && distanceBak != 0) {
+            distance = distanceBak;
+        }
+        distanceBak = d;
+        return Math.round(distance * 10 / 6 / 58);
+    }
 }
